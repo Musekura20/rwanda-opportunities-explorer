@@ -20,20 +20,14 @@ function App() {
 
   // Save or unsave an opportunity
   function handleToggleSave(id) {
-
-    if (savedIds.includes(id)) {
-
-      setSavedIds(
-        savedIds.filter((savedId) => savedId !== id)
-      )
-
-    } else {
-
-      setSavedIds([...savedIds, id])
-
+  setSavedIds((currentSavedIds) => {
+    if (currentSavedIds.includes(id)) {
+      return currentSavedIds.filter((savedId) => savedId !== id)
     }
 
-  }
+    return [...currentSavedIds, id]
+  })
+}
 
   // Reset all filters
   function handleResetFilters() {
