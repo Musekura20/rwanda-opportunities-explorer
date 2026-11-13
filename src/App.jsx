@@ -5,11 +5,15 @@ import seedOpportunities from "./data/seedOpportunities"
 
 import OpportunityList from "./components/OpportunityList"
 import OpportunityFilters from "./components/OpportunityFilters"
+import OpportunityForm from "./components/OpportunityForm"
 
 function App() {
 
   // Saved opportunities
   const [savedIds, setSavedIds] = useState([])
+
+  // All opportunities, including newly added ones
+  const [opportunities, setOpportunities] = useState(seedOpportunities)
 
   // Filter states
   const [search, setSearch] = useState("")
@@ -20,89 +24,83 @@ function App() {
 
   // Save or unsave an opportunity
   function handleToggleSave(id) {
-  setSavedIds((currentSavedIds) => {
-    if (currentSavedIds.includes(id)) {
-      return currentSavedIds.filter((savedId) => savedId !== id)
-    }
+    setSavedIds((currentSavedIds) => {
+      if (currentSavedIds.includes(id)) {
+        return currentSavedIds.filter((savedId) => savedId !== id)
+      }
 
-    return [...currentSavedIds, id]
-  })
-}
+      return [...currentSavedIds, id]
+    })
+  }
+
+  // Add a new opportunity
+  function handleAddOpportunity(newOpportunity) {
+    setOpportunities((currentOpportunities) => [
+      newOpportunity,
+      ...currentOpportunities
+    ])
+  }
 
   // Reset all filters
   function handleResetFilters() {
-
     setSearch("")
     setCategory("All")
     setAvailableOnly(false)
     setSavedOnly(false)
     setSortBy("date")
-
   }
 
   // Filter opportunities
-  const filteredOpportunities = seedOpportunities.filter((opportunity) => {
+  const filteredOpportunities = opportunities.filter((opportunity) => {
 
-    // Search by title or city
     const searchText = search.trim().toLowerCase()
 
     const matchesSearch =
       opportunity.title.toLowerCase().includes(searchText) ||
       opportunity.city.toLowerCase().includes(searchText)
 
-    // Filter by category
     const matchesCategory =
       category === "All" || opportunity.category === category
 
-    // Show available opportunities only
     const matchesAvailability =
       !availableOnly || opportunity.availableSeats > 0
 
-    // Show saved opportunities only
     const matchesSaved =
       !savedOnly || savedIds.includes(opportunity.id)
 
-    // All conditions must be true
     return (
       matchesSearch &&
       matchesCategory &&
       matchesAvailability &&
       matchesSaved
     )
-
   })
 
   // Sort opportunities
   const sortedOpportunities = [...filteredOpportunities]
 
   if (sortBy === "date") {
-
     sortedOpportunities.sort((a, b) =>
       a.date.localeCompare(b.date)
     )
-
   } else if (sortBy === "title") {
-
     sortedOpportunities.sort((a, b) =>
       a.title.localeCompare(b.title)
     )
-
   } else if (sortBy === "seats") {
-
     sortedOpportunities.sort((a, b) =>
       b.availableSeats - a.availableSeats
     )
-
   }
 
   // Dashboard statistics
-  const totalOpportunities = seedOpportunities.length
+  const totalOpportunities = opportunities.length
 
-  const availableOpportunities = seedOpportunities.filter(
+  const availableOpportunities = opportunities.filter(
     (opportunity) => opportunity.availableSeats > 0
   ).length
 
-  const featuredOpportunities = seedOpportunities.filter(
+  const featuredOpportunities = opportunities.filter(
     (opportunity) => opportunity.featured
   ).length
 
@@ -111,7 +109,6 @@ function App() {
 
       {/* Navigation */}
       <header className="bg-white border-b border-[#E8DED2]">
-
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
 
           <a href="#" className="text-xl font-bold text-[#4B3025]">
@@ -119,19 +116,14 @@ function App() {
           </a>
 
           <nav className="flex items-center gap-6 text-sm text-gray-600">
-
             <a href="#opportunities" className="hover:text-[#704936]">
               Explore
             </a>
 
-            <span>
-              Saved: {savedIds.length}
-            </span>
-
+            <span>Saved: {savedIds.length}</span>
           </nav>
 
         </div>
-
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8 md:py-12">
@@ -165,7 +157,6 @@ function App() {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
 
           <div className="bg-white rounded-xl p-6 border border-[#E8DED2]">
-
             <p className="text-gray-500 text-sm">
               Total Opportunities
             </p>
@@ -173,11 +164,9 @@ function App() {
             <h2 className="text-3xl font-bold text-[#4B3025] mt-2">
               {totalOpportunities}
             </h2>
-
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-[#E8DED2]">
-
             <p className="text-gray-500 text-sm">
               Available Opportunities
             </p>
@@ -185,11 +174,9 @@ function App() {
             <h2 className="text-3xl font-bold text-green-700 mt-2">
               {availableOpportunities}
             </h2>
-
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-[#E8DED2]">
-
             <p className="text-gray-500 text-sm">
               Featured Opportunities
             </p>
@@ -197,16 +184,17 @@ function App() {
             <h2 className="text-3xl font-bold text-[#9A653F] mt-2">
               {featuredOpportunities}
             </h2>
-
           </div>
 
         </section>
+
+        {/* Add opportunity form */}
+        <OpportunityForm onAddOpportunity={handleAddOpportunity} />
 
         {/* Opportunities section */}
         <section id="opportunities">
 
           <div className="mb-7">
-
             <p className="text-sm font-semibold text-[#9A653F] mb-2">
               FIND YOUR NEXT STEP
             </p>
@@ -218,7 +206,6 @@ function App() {
             <p className="text-gray-600 mt-2">
               Discover activities that match your interests and goals.
             </p>
-
           </div>
 
           {/* Filters */}
